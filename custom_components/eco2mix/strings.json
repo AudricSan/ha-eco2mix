@@ -1,4 +1,24 @@
 {
+  "config": {
+    "step": {
+      "user": {
+        "title": "Select the data source",
+        "data": {
+          "source": "Data source"
+        }
+      },
+      "japan": {
+        "title": "Japan: select the area",
+        "description": "Choose the electricity forecast (denki yoho) area. One entry per area.",
+        "data": {
+          "area": "Area"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This source or area is already configured."
+    }
+  },
   "entity": {
     "sensor": {
       "consumption": {
@@ -78,6 +98,33 @@
       },
       "timestamp": {
         "name": "Last update"
+      },
+      "jp_consumption": {
+        "name": "Consumption"
+      },
+      "jp_forecast": {
+        "name": "Consumption forecast"
+      },
+      "jp_supply_capacity": {
+        "name": "Supply capacity"
+      },
+      "jp_utilization": {
+        "name": "Utilization rate"
+      },
+      "jp_peak_forecast": {
+        "name": "Forecast peak demand"
+      },
+      "jp_peak_supply_capacity": {
+        "name": "Supply capacity at peak"
+      },
+      "jp_peak_reserve_margin": {
+        "name": "Reserve margin at peak"
+      },
+      "jp_solar": {
+        "name": "Solar production"
+      },
+      "jp_wind": {
+        "name": "Wind production"
       }
     }
   }

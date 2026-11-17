@@ -1,4 +1,24 @@
 {
+  "config": {
+    "step": {
+      "user": {
+        "title": "Choisir la source de données",
+        "data": {
+          "source": "Source de données"
+        }
+      },
+      "japan": {
+        "title": "Japon : choisir la zone",
+        "description": "Choisissez la zone でんき予報 (prévision d'électricité). Une entrée par zone.",
+        "data": {
+          "area": "Zone"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Cette source ou cette zone est déjà configurée."
+    }
+  },
   "entity": {
     "sensor": {
       "consumption": {
@@ -78,6 +98,33 @@
       },
       "timestamp": {
         "name": "Dernière mise à jour"
+      },
+      "jp_consumption": {
+        "name": "Consommation"
+      },
+      "jp_forecast": {
+        "name": "Prévision de consommation"
+      },
+      "jp_supply_capacity": {
+        "name": "Capacité de fourniture"
+      },
+      "jp_utilization": {
+        "name": "Taux d'utilisation"
+      },
+      "jp_peak_forecast": {
+        "name": "Pic de consommation prévu"
+      },
+      "jp_peak_supply_capacity": {
+        "name": "Capacité de fourniture à la pointe"
+      },
+      "jp_peak_reserve_margin": {
+        "name": "Réserve à la pointe"
+      },
+      "jp_solar": {
+        "name": "Production solaire"
+      },
+      "jp_wind": {
+        "name": "Production éolienne"
       }
     }
   }

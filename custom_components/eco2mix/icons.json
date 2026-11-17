@@ -78,6 +78,33 @@
       },
       "timestamp": {
         "default": "mdi:clock"
+      },
+      "jp_consumption": {
+        "default": "mdi:flash"
+      },
+      "jp_forecast": {
+        "default": "mdi:chart-line"
+      },
+      "jp_supply_capacity": {
+        "default": "mdi:transmission-tower"
+      },
+      "jp_utilization": {
+        "default": "mdi:gauge"
+      },
+      "jp_peak_forecast": {
+        "default": "mdi:flash-alert"
+      },
+      "jp_peak_supply_capacity": {
+        "default": "mdi:transmission-tower"
+      },
+      "jp_peak_reserve_margin": {
+        "default": "mdi:shield-check"
+      },
+      "jp_solar": {
+        "default": "mdi:solar-power"
+      },
+      "jp_wind": {
+        "default": "mdi:wind-turbine"
       }
     }
   }

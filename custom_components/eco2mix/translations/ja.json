@@ -1,0 +1,53 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "データソースを選択",
+        "data": {
+          "source": "データソース"
+        }
+      },
+      "japan": {
+        "title": "日本：エリアを選択",
+        "description": "でんき予報のエリアを選んでください。エリアごとに1エントリです。",
+        "data": {
+          "area": "エリア"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "このソース／エリアは既に設定済みです。"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "jp_consumption": {
+        "name": "電力使用実績"
+      },
+      "jp_forecast": {
+        "name": "電力使用予測"
+      },
+      "jp_supply_capacity": {
+        "name": "供給力"
+      },
+      "jp_utilization": {
+        "name": "使用率"
+      },
+      "jp_peak_forecast": {
+        "name": "予想最大電力"
+      },
+      "jp_peak_supply_capacity": {
+        "name": "ピーク時供給力"
+      },
+      "jp_peak_reserve_margin": {
+        "name": "ピーク時予備率"
+      },
+      "jp_solar": {
+        "name": "太陽光発電実績"
+      },
+      "jp_wind": {
+        "name": "風力発電実績"
+      }
+    }
+  }
+}
