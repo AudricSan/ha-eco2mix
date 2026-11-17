@@ -9,13 +9,25 @@ from homeassistant.const import Platform
 from homeassistant.const import UnitOfTime
 
 from .coordinator import Eco2mixDataUpdateCoordinator
-from .const import DOMAIN, DEFAULT_SCAN_INTERVAL
+from .jp_coordinator import JapanDataUpdateCoordinator
+from .const import (
+    CONF_AREA,
+    CONF_SOURCE,
+    DOMAIN,
+    DEFAULT_SCAN_INTERVAL,
+    FRANCE_UNIQUE_ID,
+    JP_AREAS,
+    SOURCE_FRANCE,
+    SOURCE_JAPAN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
-type Eco2mixConfigEntry = ConfigEntry[Eco2mixDataUpdateCoordinator]
+type Eco2mixConfigEntry = ConfigEntry[
+    Eco2mixDataUpdateCoordinator | JapanDataUpdateCoordinator
+]
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -26,7 +38,19 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up éCO2mix from a config entry."""
-    coordinator = Eco2mixDataUpdateCoordinator(hass, DEFAULT_SCAN_INTERVAL)
+    # Les entrées France d'avant le choix de source n'ont ni data ni unique_id.
+    source = entry.data.get(CONF_SOURCE, SOURCE_FRANCE)
+
+    if source == SOURCE_JAPAN:
+        area = entry.data.get(CONF_AREA)
+        if area not in JP_AREAS:
+            _LOGGER.error("Unknown Japan area: %s", area)
+            return False
+        coordinator = JapanDataUpdateCoordinator(hass, area)
+    else:
+        if entry.unique_id is None:
+            hass.config_entries.async_update_entry(entry, unique_id=FRANCE_UNIQUE_ID)
+        coordinator = Eco2mixDataUpdateCoordinator(hass, DEFAULT_SCAN_INTERVAL)
 
     try:
         await coordinator.async_config_entry_first_refresh()

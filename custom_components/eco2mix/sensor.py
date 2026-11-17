@@ -20,6 +20,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from . import Eco2mixConfigEntry
 from .const import DOMAIN
 from .coordinator import Eco2mixDataUpdateCoordinator
+from .jp_coordinator import JapanDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -229,6 +230,15 @@ async def async_setup_entry(
 
     coordinator = config_entry.runtime_data
 
+    if isinstance(coordinator, JapanDataUpdateCoordinator):
+        # Uniquement les mesures que la zone publie (pas d'entité toujours indisponible).
+        async_add_entities(
+            JapanSensor(coordinator, description)
+            for description in JAPAN_SENSOR_TYPES
+            if description.key in coordinator.data["available"]
+        )
+        return
+
     async_add_entities(
         (
             Eco2mixSensor(coordinator, description)
@@ -237,6 +247,98 @@ async def async_setup_entry(
         ),
         False,
     )
+
+
+@dataclass(frozen=True, kw_only=True)
+class JapanSensorEntityDescription(SensorEntityDescription):
+    """Describes a Japan (でんき予報) sensor entity.
+
+    `key` est la clé du parseur ; `extra_attrs` liste les clés du dict de
+    données exposées en attributs (créneau horaire, horodatage de la mesure).
+    """
+
+    extra_attrs: tuple[str, ...] = ()
+
+
+def _jp_mw(key: str, **kwargs: Any) -> JapanSensorEntityDescription:
+    return JapanSensorEntityDescription(
+        key=key,
+        translation_key=f"jp_{key}",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.MEGA_WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        **kwargs,
+    )
+
+
+def _jp_pct(key: str, **kwargs: Any) -> JapanSensorEntityDescription:
+    return JapanSensorEntityDescription(
+        key=key,
+        translation_key=f"jp_{key}",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        **kwargs,
+    )
+
+
+JAPAN_SENSOR_TYPES: tuple[JapanSensorEntityDescription, ...] = (
+    _jp_mw("consumption", extra_attrs=("consumption_time",)),
+    _jp_mw("forecast", extra_attrs=("forecast_time",)),
+    _jp_mw("supply_capacity", extra_attrs=("supply_capacity_time",)),
+    _jp_pct("utilization", extra_attrs=("utilization_time",)),
+    _jp_mw("peak_forecast", extra_attrs=("peak_forecast_slot",)),
+    _jp_mw("peak_supply_capacity", extra_attrs=("peak_supply_capacity_slot",)),
+    _jp_pct("peak_reserve_margin", extra_attrs=("peak_reserve_margin_slot",)),
+    _jp_mw("solar", extra_attrs=("solar_time",)),
+    _jp_mw("wind", extra_attrs=("wind_time",)),
+)
+
+
+class JapanSensor(CoordinatorEntity[JapanDataUpdateCoordinator], SensorEntity):
+    """Capteur でんき予報 d'une zone japonaise."""
+
+    _attr_has_entity_name = True
+    entity_description: JapanSensorEntityDescription
+
+    def __init__(
+        self,
+        coordinator: JapanDataUpdateCoordinator,
+        description: JapanSensorEntityDescription,
+    ) -> None:
+        """Initialize."""
+        super().__init__(coordinator)
+        info = coordinator.area_info
+        self.entity_description = description
+        self._attr_unique_id = f"eco2mix-jp-{coordinator.area}-{description.key}"
+        self._attr_device_info = DeviceInfo(
+            entry_type=DeviceEntryType.SERVICE,
+            identifiers={(DOMAIN, f"jp_{coordinator.area}")},
+            manufacturer=info["utility"],
+            name=f"Denki Yoho {info['name_en']}",
+            model="でんき予報 (CSV)",
+            configuration_url=info["page"],
+        )
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the state of the sensor."""
+        return self.coordinator.data.get(self.entity_description.key)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Zone, source, date de mise à jour du CSV et créneau de la mesure."""
+        data = self.coordinator.data
+        attrs: dict[str, Any] = {
+            "area": self.coordinator.area,
+            "source_url": data.get("source_url"),
+            "csv_updated": data["updated"].isoformat() if data.get("updated") else None,
+        }
+        for key in self.entity_description.extra_attrs:
+            value = data.get(key)
+            attrs[key.removeprefix(self.entity_description.key + "_")] = (
+                value.isoformat() if hasattr(value, "isoformat") else value
+            )
+        return attrs
 
 
 class Eco2mixSensor(CoordinatorEntity[Eco2mixDataUpdateCoordinator], SensorEntity):
